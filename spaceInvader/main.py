@@ -62,6 +62,8 @@ bulletX_change = 0
 bulletY_change = -4
 bullet_state = "ready"
 
+overStatus = False
+
 #Boom
 boomImage = pygame.image.load("boom.png")
 
@@ -99,7 +101,7 @@ def show_score(x, y):
 
 def game_over_text():
     game_over = over_font.render("GAME OVER", True, (255,255,255))
-    screen.blit(game_over, (400, 300))
+    screen.blit(game_over, (300, 250))
 
 
 #Game Loop
@@ -170,6 +172,7 @@ while running:
             for j in range(no_of_enemies):
                 enemyX[j] = 2000
             game_over_text()
+            overStatus = True
             break
 
         if enemyX[i] <= 0:
@@ -203,5 +206,8 @@ while running:
         enemy(enemyX[i], enemyY[i])
 
     show_score(textX, textY)
+
+    if overStatus:
+        game_over_text()
 
     pygame.display.update()
