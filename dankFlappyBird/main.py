@@ -13,8 +13,8 @@ clock = pygame.time.Clock()
 gravity = 0.5
 bird_movement = 0
 game_active = True
-score = 0
 high_score = 0
+pipeSpacing = 10000
 
 what_pipe = False
 
@@ -50,7 +50,20 @@ bulletImg = pygame.image.load('bullet.png').convert_alpha()
 bulletX = bird_rect.centerx
 bulletY = bird_rect.centery
 bulletState = 'ready'
-bulletXChange = 5
+bulletXChange = 10
+
+score_value = 0
+
+sucks = pygame.font.Font('herosita.ttf', 32)
+
+textX = 10
+textY = 10
+
+
+def showscore(x, y):
+    score = sucks.render(f'Score: {score_value}', True, (255, 255, 255))
+    screen.blit(score, (x, y))
+
 
 # enemyConfig
 enemyImg = []
@@ -64,12 +77,10 @@ for i in range(12):
     enemyY.append(random.randint(0, 590))
     enemyYChange.append(3)
 
-enemy_rect = []
-
 
 def enemy(x, y, k):
-    enemy_rect.append(enemyImg[k].get_rect(center=(x, y)))
-    screen.blit(enemyImg[k], enemy_rect[k])
+    enemy_rect = (enemyImg[k].get_rect(center=(x, y)))
+    screen.blit(enemyImg[k], enemy_rect)
 
 
 def bullet(x, y):
@@ -77,6 +88,13 @@ def bullet(x, y):
     bulletState = 'fire'
     bullet_rect = bulletImg.get_rect(center=(x, y))
     screen.blit(bulletImg, bullet_rect)
+
+
+def collidere(ex, ey, bx, by):
+    di = math.sqrt(math.pow((ex-bx), 2)+math.pow((ey-by), 2))
+    if di < 27:
+        return True
+    return False
 
 
 def create_pipe():
@@ -112,7 +130,7 @@ def draw_pipes(pipes):
 
 pipe_list = []
 SPAWNPIPE = pygame.USEREVENT
-pygame.time.set_timer(SPAWNPIPE, 4000)
+pygame.time.set_timer(SPAWNPIPE, pipeSpacing)
 
 
 # collision detection
@@ -125,10 +143,6 @@ def checkCollisions(pipes):
         return False
         
     return True
-
-
-def bulletEnemyCollision():
-    pass
 
 
 def rotate_bird(bird):
@@ -148,6 +162,7 @@ def game_over_text():
 
 
 while True:
+    bulletVar = 0
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -209,15 +224,8 @@ while True:
 
     screen.blit(base, (base_pos, 590))
 
-    if bulletX > 1240:
-        bulletX = bird_rect.centerx
-        bulletState = 'ready'
-
-    if bulletState == 'fire':
-        bullet(bulletX, bulletY)
-        bulletX += bulletXChange
-
     for i in range(12):
+
         enemyY[i] += enemyYChange[i]
 
         if enemyY[i] >= 568:
@@ -226,7 +234,25 @@ while True:
         if enemyY[i] <= 0:
             enemyYChange[i] = 3
 
+        if collidere(enemyX[i], enemyY[i], bulletX, bulletY):
+            bulletState = 'ready'
+            bulletX = bird_rect.centerx
+            bulletY = bird_rect.centery
+            enemyX[i] = random.randint(980, 1270)
+            enemyY[i] = random.randint(0, 590)
+            score_value += 1
+
         enemy(enemyX[i], enemyY[i], i)
 
+    if bulletX > 1240:
+        bulletX = bird_rect.centerx
+        bulletState = 'ready'
+
+    if bulletState == 'fire':
+        bullet(bulletX, bulletY)
+        bulletX += bulletXChange
+
+    pipeSpacing = random.randint(3500, 10000)
+    showscore(textX, textY)
     pygame.display.update()
-    clock.tick(80)
+    clock.tick(60)
