@@ -3,6 +3,7 @@ import random
 import math
 from pygame import mixer
 import sys
+from time import sleep
 
 pygame.init()
 
@@ -57,7 +58,7 @@ bulletState = 'ready'
 bulletXChange = 10
 
 score_value = 0
-highScore = 0
+highscore = 0
 
 sucks = pygame.font.Font('herosita.ttf', 32)
 
@@ -66,7 +67,7 @@ textY = 10
 
 
 def showscore(x, y):
-    score = sucks.render(f'Score: {score_value}    Highscore: {highScore}', True, (255, 255, 255))
+    score = sucks.render(f'Score: {score_value}    Highscore: {highscore}', True, (255, 255, 255))
     screen.blit(score, (x, y))
 
 
@@ -100,6 +101,8 @@ def bullet(x, y):
 def collidere(ex, ey, bx, by):
     di = math.sqrt(math.pow((ex-bx), 2)+math.pow((ey-by), 2))
     if di < 27:
+        #Bullet Hit
+        mixer.Sound('hit.wav').play()
         return True
     return False
 
@@ -185,7 +188,7 @@ while True:
                 pipe_list.clear()
                 bird_rect.center = (200, 250)
                 bird_movement = 0
-                if score_value > highScore:
+                if score_value > highscore:
                     highscore = score_value
                 score_value = 0
 
@@ -224,6 +227,7 @@ while True:
         if not checkCollisions(pipe_list):
             mixer.Sound('gameOver.wav').play()
             game_active = False
+            sleep(2)
 
         for i in range(enemyCount):
 
@@ -237,7 +241,7 @@ while True:
 
             if collidere(enemyX[i], enemyY[i], bulletX, bulletY):
                 bulletState = 'ready'
-                mixer.Sound('shoot.mp3').play()
+                mixer.Sound('hit.wav').play()
                 bulletX = bird_rect.centerx
                 bulletY = bird_rect.centery
                 enemyX[i] = random.randint(980, 1270)
