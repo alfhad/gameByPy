@@ -15,8 +15,15 @@ pygame.display.set_icon(icon)
 
 background = pygame.image.load("background.png").convert()
 base = pygame.image.load("base.png").convert()
-
 base_pos = -500
+
+bird_mid = pygame.image.load("redbird-midflap.png").convert()
+bird_mid = pygame.transform.scale2x(bird_mid)
+bird_rect = bird_mid.get_rect(center = (200, 250))
+
+
+
+
 
 
 while True:
@@ -31,6 +38,7 @@ while True:
     if base_pos >= 0:
         base_pos = -500
     screen.blit(base, (base_pos, 430))
+    screen.blit(bird_mid, bird_rect)
 
 
     pygame.display.update()
