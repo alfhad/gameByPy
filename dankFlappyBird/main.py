@@ -9,6 +9,8 @@ pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 
+mixer.music.load('back.wav')
+mixer.music.play(-1)
 # Game Variables
 gravity = 0.5
 bird_movement = 0
@@ -55,7 +57,7 @@ bulletState = 'ready'
 bulletXChange = 10
 
 score_value = 0
-highscore = 0
+highScore = 0
 
 sucks = pygame.font.Font('herosita.ttf', 32)
 
@@ -64,7 +66,7 @@ textY = 10
 
 
 def showscore(x, y):
-    score = sucks.render(f'Score: {score_value}    Highscore: {highscore}', True, (255, 255, 255))
+    score = sucks.render(f'Score: {score_value}    Highscore: {highScore}', True, (255, 255, 255))
     screen.blit(score, (x, y))
 
 
@@ -74,9 +76,9 @@ enemyX = []
 enemyY = []
 enemyYChange = []
 
-#bird_upflap = pygame.transform.scale2x(pygame.image.load("devil.png")).convert_alpha()
+# bird_upflap = pygame.transform.scale2x(pygame.image.load("devil.png")).convert_alpha()
 for i in range(enemyCount):
-    #enemyImg.append(pygame.image.load('devil.png'))
+    # enemyImg.append(pygame.image.load('devil.png'))
     enemyImg.append(pygame.transform.scale2x(pygame.image.load("devil.png")).convert_alpha())
     enemyX.append(random.randint(980, 1240))
     enemyY.append(random.randint(0, 560))
@@ -178,17 +180,18 @@ while True:
                 bird_movement = 0
                 bird_movement -= 10
 
-            if event.key == pygame.K_SPACE and game_active == False:
+            if event.key == pygame.K_SPACE and not game_active:
                 game_active = True
                 pipe_list.clear()
                 bird_rect.center = (200, 250)
                 bird_movement = 0
-                if score_value > highscore:
+                if score_value > highScore:
                     highscore = score_value
                 score_value = 0
 
             if event.key == pygame.K_z:
                 if bulletState == 'ready':
+                    mixer.Sound('fire.wav').play()
                     bulletY = bird_rect.centery
                     bullet(bulletX, bulletY)
 
@@ -219,6 +222,7 @@ while True:
         draw_pipes(pipe_list)
 
         if not checkCollisions(pipe_list):
+            mixer.Sound('gameOver.wav').play()
             game_active = False
 
         for i in range(enemyCount):
@@ -233,6 +237,7 @@ while True:
 
             if collidere(enemyX[i], enemyY[i], bulletX, bulletY):
                 bulletState = 'ready'
+                mixer.Sound('shoot.mp3').play()
                 bulletX = bird_rect.centerx
                 bulletY = bird_rect.centery
                 enemyX[i] = random.randint(980, 1270)
@@ -261,7 +266,6 @@ while True:
     screen.blit(base, (base_pos, 590))
 
     screen.blit(base, (base_pos, 590))
-
 
     showscore(textX, textY)
     pygame.display.update()
