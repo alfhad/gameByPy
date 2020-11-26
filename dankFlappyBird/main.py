@@ -13,6 +13,8 @@ clock = pygame.time.Clock()
 gravity = 0.5
 bird_movement = 0
 game_active = True
+score = 0
+high_score = 0
 
 what_pipe = False
 
@@ -24,14 +26,24 @@ background = pygame.image.load("background.png").convert()
 #background = pygame.transform.scale2x(background)
 base = pygame.image.load("base.png").convert()
 base_pos = 0
-
-bird_mid = pygame.image.load("redbird-midflap.png").convert()
-bird_mid = pygame.transform.scale2x(bird_mid)
-bird_rect = bird_mid.get_rect(center = (200, 250))
+bird_upflap = pygame.transform.scale2x(pygame.image.load("redbird-upflap.png")).convert_alpha()
+bird_midflap = pygame.transform.scale2x(pygame.image.load("redbird-midflap.png")).convert_alpha()
+bird_downflap = pygame.transform.scale2x(pygame.image.load("redbird-downflap.png")).convert_alpha()
+#bird_mid = pygame.image.load("redbird-midflap.png").convert_alpha()
+#bird_mid = pygame.transform.scale2x(bird_mid)
+#bird_rect = bird_mid.get_rect(center = (200, 250))
+bird_frames = [bird_downflap, bird_midflap, bird_upflap]
+bird_index = 0
+bird_mid = bird_frames[bird_index]
+bird_rect = bird_mid.get_rect(center = (200, 150))
 
 pipe_surface = pygame.image.load("pipe-green.png").convert()
 pipe_surface = pygame.transform.scale2x(pipe_surface)
 
+over_font = pygame.font.Font("herosita.ttf", 64)
+
+BIRDFLAP = pygame.USEREVENT + 1
+pygame.time.set_timer(BIRDFLAP, 400)
 
 def create_pipe():
     rand_val = random.randint(220, 540)
@@ -76,6 +88,18 @@ def checkCollisions(pipes):
         
     return True
 
+def rotate_bird(bird):
+    new_bird = pygame.transform.rotozoom(bird, -bird_movement*3, 1)
+    return new_bird
+
+def bird_animation():
+    new_bird = bird_frames[bird_index]
+    new_bird_rect = new_bird.get_rect(center=(100, bird_rect.centery))
+    return new_bird, new_bird_rect
+
+def game_over_text():
+    game_over = over_font.render("GAME OVER", True, (255,255,255))
+    screen.blit(game_over, (500, 300))
 
 while True:
     for event in pygame.event.get():
@@ -98,14 +122,23 @@ while True:
             print("Pipe Spawn")
             pipe_list.extend(create_pipe())
 
+        if event.type == BIRDFLAP:
+            if bird_index < 2:
+                bird_index += 1
+            else:
+                bird_index = 0
+
+            bird_mid, bird_rect = bird_animation()
+
     screen.fill((57,62,70))
     screen.blit(background, (0, 0))
 
     if game_active:
         #Bird
         bird_movement += gravity
+        rotated_bird = rotate_bird(bird_mid)
         bird_rect.centery += bird_movement
-        screen.blit(bird_mid, bird_rect)
+        screen.blit(rotated_bird, bird_rect)
 
         #Pipes
         pipe_list = move_pipes(pipe_list)
@@ -113,6 +146,9 @@ while True:
 
         if checkCollisions(pipe_list) == False:
             game_active = False
+
+    if game_active == False:
+        game_over_text()
 
     #Base
     base_pos -= 1
@@ -122,4 +158,4 @@ while True:
 
     screen.blit(base, (base_pos, 590))
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(80)
