@@ -12,6 +12,7 @@ clock = pygame.time.Clock()
 #Game Variables
 gravity = 0.5
 bird_movement = 0
+game_active = True
 
 what_pipe = False
 
@@ -68,11 +69,12 @@ pygame.time.set_timer(SPAWNPIPE, 4000)
 def checkCollisions(pipes):
     for pipe in pipes:
         if bird_rect.colliderect(pipe):
-            print("Collision")
+            return False
 
     if bird_rect.top <= -100 or bird_rect.bottom >= 590:
-        print("Collision")
-
+        return False
+        
+    return True
 
 
 while True:
@@ -82,9 +84,15 @@ while True:
             sys.exit()
         
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and game_active:
                 bird_movement = 0
                 bird_movement -= 10
+
+            if event.key == pygame.K_SPACE and game_active == False:
+                game_active = True
+                pipe_list.clear()
+                bird_rect.center = (200, 250)
+                bird_movement = 0
 
         if event.type == SPAWNPIPE:
             print("Pipe Spawn")
@@ -93,23 +101,25 @@ while True:
     screen.fill((57,62,70))
     screen.blit(background, (0, 0))
 
-    #Bird
-    bird_movement += gravity
-    bird_rect.centery += bird_movement 
+    if game_active:
+        #Bird
+        bird_movement += gravity
+        bird_rect.centery += bird_movement
+        screen.blit(bird_mid, bird_rect)
+
+        #Pipes
+        pipe_list = move_pipes(pipe_list)
+        draw_pipes(pipe_list)
+
+        if checkCollisions(pipe_list) == False:
+            game_active = False
 
     #Base
     base_pos -= 1
     if base_pos <= -250:
         base_pos = 0
     screen.blit(base, (base_pos, 590))
-    screen.blit(bird_mid, bird_rect)
-
-    #Pipes
-    pipe_list = move_pipes(pipe_list)
-    draw_pipes(pipe_list)
-
-    checkCollisions(pipe_list)
 
     screen.blit(base, (base_pos, 590))
     pygame.display.update()
-    clock.tick(120)
+    clock.tick(60)
